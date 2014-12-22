@@ -1,0 +1,141 @@
+% Introduction to Impala
+% Impala 簡介
+% Jazz Yao-Tsung Wang
+
+# Agenda
+
+* Introduction to Impala 
+* Components of the Impala Server
+* File Format Support in Impala
+* Impala SQL Language
+
+# Introduction to Impala
+
+* Open Source Project by Cloudera
+    * <https://github.com/cloudera/impala>
+* Distributed, Massively Parallel Processing (MPP) engine
+* (Real-time) Interactive Query for Hadoop
+* Impala uses the same metadata store as Hive to record information about table structure and properties
+* Impala server consists of three different daemon processes:
+    * impalad 
+    * statestored
+    * catalogd
+
+# Components of the Impala Server
+
+* impalad (The Impala Daemon) 
+    - runs on **each node** of the cluster
+    - coordinator node = that node you submit a query
+* statestored (The Impala Statestore)
+    - run on **one node** in the cluster
+    - checks on the **health of Impala daemons**
+    - cluster just becomes less robust while statestored is offline
+* catalogd (The Impala Catalog Service)
+    - run on **one node** in the cluster
+    - relays the **metadata changes** to all the nodes
+    - reduces **REFRESH** and **INVALIDATE METADATA**
+* <small>Reference: [Components of the Impala Server](http://www.cloudera.com/content/cloudera/en/documentation/cloudera-impala/latest/topics/impala_components.html)</small>
+
+# Architecture of the Impala Server
+
+<center><img src="images/impala_architecture.png" height="420"/><br/><small>[high-level architectural view of Impala](http://blog.cloudera.com/blog/2012/10/cloudera-impala-real-time-queries-in-apache-hadoop-for-real/)</small></center>
+
+
+# File Format support in Impala (1)
+
+<small><small><small>
+<table class="table" frame="hsides" rules="all" summary="" border="1" cellpadding="4" cellspacing="0">
+  <caption>Table 1. File Format Support in Impala</caption>
+  <thead align="left">
+    <tr>
+      <th width="10%">File Type</th>
+      <th width="10%">Format</th>
+      <th width="20%">Compression Codecs</th>
+      <th width="30%">Impala Can CREATE?</th>
+      <th width="30%">Impala Can INSERT?</th>
+    </tr>
+  </thead>
+  <tbody class="tbody">
+    <tr>
+      <td><a href="http://www.cloudera.com/content/cloudera/en/documentation/cloudera-impala/latest/topics/impala_parquet.html#parquet">Parquet</a></td>
+      <td>Structured</td>
+      <td>Snappy, gzip; currently Snappy by default</td>
+      <td>Yes.</td>
+      <td>Yes: CREATE TABLE, INSERT, LOAD DATA, and query.</td>
+    </tr>
+    <tr>
+      <td><a href="http://www.cloudera.com/content/cloudera/en/documentation/cloudera-impala/latest/topics/impala_txtfile.html#txtfile">Text</a></td>
+      <td>Unstructured</td>
+      <td>LZO, gzip, bzip2, Snappy</td>
+      <td>Yes. For CREATE TABLE with no STORED AS clause, the default file format is uncompressed text, with values separated by ASCII 0x01 characters (typically represented as Ctrl-A).</td>
+      <td>Yes: CREATE TABLE, INSERT, LOAD DATA, and query. If LZO compression is used, you must create the table and load data in Hive.
+      If other kinds of compression are used, you must load data through LOAD DATA,
+      Hive, or manually in HDFS.
+      </td>
+    </tr>
+    <tr>
+      <td><a href="http://www.cloudera.com/content/cloudera/en/documentation/cloudera-impala/latest/topics/impala_avro.html#avro">Avro</a></td>
+      <td>Structured</td>
+      <td>Snappy, gzip, deflate, bzip2</td>
+      <td>Yes, in Impala 1.4.0 and higher. Before that, create the table using Hive.</td>
+      <td>No. Load data through LOAD DATA on data files already in the right format, or use INSERT in Hive.</td>
+    </tr>
+  </tbody>
+</table>
+</small></small></small>
+
+# File Format support in Impala (2)
+
+<small><small><small>
+<table class="table" frame="hsides" rules="all" summary="" border="1" cellpadding="4" cellspacing="0">
+  <caption>Table 1. File Format Support in Impala</caption>
+  <thead align="left">
+    <tr>
+      <th width="10%">File Type</th>
+      <th width="10%">Format</th>
+      <th width="20%">Compression Codecs</th>
+      <th width="30%">Impala Can CREATE?</th>
+      <th width="30%">Impala Can INSERT?</th>
+    </tr>
+  </thead>
+  <tbody class="tbody">
+    <tr>
+      <td><a href="http://www.cloudera.com/content/cloudera/en/documentation/cloudera-impala/latest/topics/impala_rcfile.html#rcfile">RCFile</a></td>
+      <td>Structured</td>
+      <td>Snappy, gzip, deflate, bzip2</td>
+      <td>Yes.</td>
+      <td>No. Load data through LOAD DATA on data files already in the right format, or use INSERT in Hive.</td>
+    </tr>
+    <tr>
+      <td><a href="http://www.cloudera.com/content/cloudera/en/documentation/cloudera-impala/latest/topics/impala_seqfile.html#seqfile">SequenceFile</a></td>
+      <td>Structured</td>
+      <td>Snappy, gzip, deflate, bzip2</td>
+      <td>No. Load data through LOAD DATA on data files already in the right format, or use INSERT in Hive.</td>
+      <td>Yes, in Impala 2.0 and higher. For earlier Impala releases, load data through LOAD DATA on data files already in the right format, or use INSERT in Hive.</td>
+    </tr>
+  </tbody>
+</table>
+</small></small></small>
+
+# Impala SQL Language
+
+* It currently doesn’t have OLTP-style operations such as **DELETE , UPDATE , or COMMIT / ROLLBACK**
+* It also does not have **indexes, constraints, or foreign keys**
+* Impala supports **most of the same statements and clauses as HiveQL**
+    * Impala data manipulation (DML) statements is similar to the DML component of HiveQL.
+    * Impala provides many **built-in functions** with the **same names and parameter types** as their HiveQL equivalents. 
+    * Impala **data types** have the same names and semantics as the equivalent Hive data types
+* Impala also supports **INSERT INTO** and **INSERT OVERWRITE**.
+
+# SQL Differences Between Impala and Hive
+
+* Impala does not currently support these HiveQL statements:
+    * ANALYZE TABLE (the Impala equivalent is COMPUTE STATS)
+    * DESCRIBE COLUMN
+    * DESCRIBE DATABASE
+    * EXPORT TABLE
+    * IMPORT TABLE
+    * SHOW TABLE EXTENDED
+    * SHOW INDEXES
+    * SHOW COLUMNS
+* <small>Reference: [SQL Differences Between Impala and Hive](http://www.cloudera.com/content/cloudera/en/documentation/cloudera-impala/latest/topics/impala_langref_unsupported.html#langref_hiveql_delta)</small>
