@@ -7,7 +7,8 @@
 * [實作一：Impala (1) : 內建函數初探](Lab-001.html)
 * [實作二：Impala (2) : INSERT INTO ... VALUES 語法](Lab-002.html)
 * [實作三：Impala (3) : LOAD DATA 語法](Lab-003.html)
-* [實作三：Impala (4) : PARTITION 範例](Lab-004.html)
+* [實作四：Impala (4) : PARTITION 範例](Lab-004.html)
+* [實作五：Impala (5) : EXTERNAL TABLE 外部資料表](Lab-005.html)
 
 ##### Impala & Hive
 
